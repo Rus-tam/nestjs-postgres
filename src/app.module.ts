@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { FileUploadModule } from './file_upload/file_upload.module';
+import { ProjectModule } from './project/project.module';
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { FileUploadModule } from './file_upload/file_upload.module';
         };
       },
     }),
-    FileUploadModule,
+    ProjectModule,
   ],
   controllers: [AppController],
   providers: [AppService],
