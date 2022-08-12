@@ -25,4 +25,7 @@ export class CalculationFile {
 
   @Column()
   uploadTime: string;
+
+  @Column()
+  description: string;
 }

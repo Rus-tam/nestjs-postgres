@@ -17,4 +17,10 @@ export class SimpleReport {
 
   @Column({ type: 'bytea' })
   simpleReport: Uint8Array;
+
+  @Column()
+  creationTime: string;
+
+  @Column()
+  description: string;
 }
