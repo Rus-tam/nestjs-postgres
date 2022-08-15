@@ -13,11 +13,14 @@ export class Project {
   @Column()
   projectDescription: string;
 
+  @Column()
+  createdAt: Date;
+
   @OneToMany(
     () => CalculationFile,
     (calculationFile: CalculationFile) => calculationFile.project,
   )
-  calculationFile: CalculationFile[];
+  calculationFiles: CalculationFile[];
 
   @OneToMany(
     () => SimpleReport,

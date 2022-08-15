@@ -59,20 +59,22 @@ export class AppController {
     return message;
   }
 
-  @Post('/new-file')
+  @Post('/projects/:id/new-calculation-file')
   @UseInterceptors(FileInterceptor('file'))
   async createNewFile(
+    @Param('id') id: number,
     @UploadedFile() file: Express.Multer.File,
     @Body() fileInfo: CreateCalculationFileDto,
-    projectId: number,
   ) {
-    const project = await this.projectService.getProjectById(projectId)[0];
+    const project = await this.projectService.getProjectById(id);
 
     const calculationFile =
       await this.calculationFileService.uploadCalculationFile(
-        file.buffer,
+        file,
         fileInfo,
-        project,
+        project[0],
       );
+
+    return calculationFile;
   }
 }

@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Project } from './project.entity';
 
 @Entity()
@@ -9,7 +15,7 @@ export class CalculationFile {
   @Column()
   fileName: string;
 
-  @ManyToOne(() => Project, (project: Project) => project.calculationFile)
+  @ManyToOne(() => Project, (project: Project) => project.calculationFiles)
   project: Project;
 
   @Column({ type: 'bytea' })
@@ -19,8 +25,11 @@ export class CalculationFile {
   author: string;
 
   @Column()
-  uploadTime: string;
+  createdAt: Date;
 
   @Column()
   description: string;
+
+  @DeleteDateColumn()
+  public deletedAt: Date;
 }

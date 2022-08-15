@@ -26,7 +26,8 @@ export class ProjectService {
     const newProject = this.projectRepository.create({
       projectName: project.projectName.toLowerCase(),
       projectDescription: project.projectDescription.toLowerCase(),
-      calculationFile: [],
+      createdAt: new Date(),
+      calculationFiles: [],
       simpleReport: [],
     });
     projects.forEach((project) => {
@@ -40,7 +41,9 @@ export class ProjectService {
   }
 
   async getAllProjects() {
-    const projects = await this.projectRepository.find();
+    const projects = await this.projectRepository.find({
+      relations: ['calculationFiles'],
+    });
 
     if (projects.length > 0) {
       return projects;
@@ -76,7 +79,7 @@ export class ProjectService {
       Logger.error(`Could not find project with id - ${projectId}`);
       throw new NotFoundException(ProjectErrors.NotFoundById);
     }
-    await this.projectRepository.delete({ id: projectId });
+    await this.projectRepository.softDelete({ id: projectId });
     return {
       message: `Project with id - ${projectId} successefuly deleted`,
     };
