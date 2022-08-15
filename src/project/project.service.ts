@@ -53,12 +53,17 @@ export class ProjectService {
     }
   }
 
-  async getProjectById(projectId: number) {
-    const project = await this.projectRepository.findBy({ id: projectId });
-    if (project.length > 0) {
+  async getProjectById(id: number) {
+    const project = await this.projectRepository.findOne({
+      relations: ['calculationFiles'],
+      where: {
+        id,
+      },
+    });
+    if (project) {
       return project;
     } else {
-      Logger.error(`Could not find project with id - ${projectId}`);
+      Logger.error(`Could not find project with id - ${id}`);
       throw new NotFoundException(ProjectErrors.NotFoundById);
     }
   }

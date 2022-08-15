@@ -1,4 +1,10 @@
-import { Column, PrimaryGeneratedColumn, Entity, OneToMany } from 'typeorm';
+import {
+  Column,
+  PrimaryGeneratedColumn,
+  Entity,
+  OneToMany,
+  DeleteDateColumn,
+} from 'typeorm';
 import { CalculationFile } from './calculationFile.entitty';
 import { SimpleReport } from './simpleReport.entity';
 
@@ -27,4 +33,7 @@ export class Project {
     (simpleReport: SimpleReport) => simpleReport.project,
   )
   simpleReport: SimpleReport[];
+
+  @DeleteDateColumn()
+  public deletedAt: Date;
 }

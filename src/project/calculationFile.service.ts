@@ -17,7 +17,7 @@ export class CalculationFileService {
     file: Express.Multer.File,
     fileInfo: CreateCalculationFileDto,
     project: Project,
-  ) {
+  ): Promise<CalculationFile> {
     const obj = JSON.parse(JSON.stringify(fileInfo));
     const fileData = {
       fileName: file.originalname,
@@ -36,7 +36,7 @@ export class CalculationFileService {
     return newFile;
   }
 
-  async deleteCalculationFileById(id: number) {
+  async deleteCalculationFileById(id: number): Promise<void> {
     const calculationFile = await this.calculationFileRepository.findBy({ id });
 
     if (calculationFile.length === 0) {
@@ -44,9 +44,9 @@ export class CalculationFileService {
       throw new NotFoundException(CalculationFileErrors.NotFoundById);
     }
 
-    await this.calculationFileRepository.delete({ id });
-    return {
-      message: `Calculation file with id - ${id} successefuly deleted`,
-    };
+    const deleteResponse = await this.calculationFileRepository.softDelete(id);
+    if (!deleteResponse.affected) {
+      throw new NotFoundException(CalculationFileErrors.NotFoundById);
+    }
   }
 }

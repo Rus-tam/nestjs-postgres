@@ -18,6 +18,8 @@ import { CreateProjectDto } from './project/dto/createProject.dto';
 import { ProjectService } from './project/project.service';
 import { Express } from 'express';
 import { CreateCalculationFileDto } from './project/dto/createCalculationFile.dto';
+import { CalculationFile } from './project/calculationFile.entitty';
+import { Project } from './project/project.entity';
 
 @Controller()
 export class AppController {
@@ -28,35 +30,40 @@ export class AppController {
   ) {}
 
   @Post('/new-project')
-  async makeNewProject(@Body() project: CreateProjectDto) {
+  async makeNewProject(@Body() project: CreateProjectDto): Promise<void> {
     await this.appService.makeNewProject(project);
   }
 
   @Get('/all-projects')
-  async getAllProjects() {
+  async getAllProjects(): Promise<Project[]> {
     const projects = await this.projectService.getAllProjects();
 
     return projects;
   }
 
   @Get('/projects/:id')
-  async getProjectById(@Param('id') id: number) {
+  async getProjectById(@Param('id') id: number): Promise<Project> {
     const project = await this.projectService.getProjectById(id);
 
     return project;
   }
 
   @Get('/projects/find-by-name/:name')
-  async getProjectByName(@Param('name') name: string) {
+  async getProjectByName(@Param('name') name: string): Promise<Project> {
     const project = await this.projectService.getProjectByName(name);
-    return project;
+    return project[0];
   }
 
-  @Delete('/projects/:id')
-  async deleteProject(@Param('id') id: number) {
-    const message = await this.projectService.deleteProject(id);
+  @Delete('/projects/delete/:id')
+  async deleteProject(@Param('id') id: number): Promise<void> {
+    const project = await this.projectService.getProjectById(id);
+    const calculationFiles = project.calculationFiles;
 
-    return message;
+    for (const file of calculationFiles) {
+      await this.calculationFileService.deleteCalculationFileById(file.id);
+    }
+
+    await this.projectService.deleteProject(id);
   }
 
   @Post('/projects/:id/new-calculation-file')
@@ -65,7 +72,7 @@ export class AppController {
     @Param('id') id: number,
     @UploadedFile() file: Express.Multer.File,
     @Body() fileInfo: CreateCalculationFileDto,
-  ) {
+  ): Promise<CalculationFile> {
     const project = await this.projectService.getProjectById(id);
 
     const calculationFile =
@@ -76,5 +83,10 @@ export class AppController {
       );
 
     return calculationFile;
+  }
+
+  @Delete('/projects/delete-calculation-file/:id')
+  async deleteCalculationFile(@Param('id') id: number): Promise<void> {
+    await this.calculationFileService.deleteCalculationFileById(id);
   }
 }
