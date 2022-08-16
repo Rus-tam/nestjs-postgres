@@ -1,25 +1,30 @@
 import {
   Body,
+  ConsoleLogger,
   Controller,
   Delete,
   Get,
+  Header,
   Logger,
   NotFoundException,
   Param,
   Post,
+  Res,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AppService } from './app.service';
-import { ProjectErrors } from './errors/project.errors';
 import { CalculationFileService } from './project/calculationFile.service';
 import { CreateProjectDto } from './project/dto/createProject.dto';
 import { ProjectService } from './project/project.service';
-import { Express } from 'express';
+import { Express, Response } from 'express';
 import { CreateCalculationFileDto } from './project/dto/createCalculationFile.dto';
 import { CalculationFile } from './project/calculationFile.entitty';
 import { Project } from './project/project.entity';
+import { Readable } from 'stream';
+import { InitializedRelationError } from 'typeorm';
 
 @Controller()
 export class AppController {
@@ -79,7 +84,7 @@ export class AppController {
       await this.calculationFileService.uploadCalculationFile(
         file,
         fileInfo,
-        project[0],
+        project,
       );
 
     return calculationFile;
@@ -88,5 +93,35 @@ export class AppController {
   @Delete('/projects/delete-calculation-file/:id')
   async deleteCalculationFile(@Param('id') id: number): Promise<void> {
     await this.calculationFileService.deleteCalculationFileById(id);
+  }
+
+  @Get('/calculation-files')
+  async getAllCalculationFiles(): Promise<CalculationFile[]> {
+    const calculationFiles =
+      await this.calculationFileService.getAllCalculationFiles();
+
+    return calculationFiles;
+  }
+
+  @Get('/projects/:projectId/calculation-files/:calculationFileId/download')
+  async getCalculationFileById(
+    @Param('projectId') projectId: number,
+    @Param('calculationFileId') calculationFileId: number,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<StreamableFile> {
+    const project = await this.projectService.getProjectById(projectId);
+    const calculationFiles = project.calculationFiles;
+    let selectedCalculationFile: CalculationFile;
+
+    for (const file of calculationFiles) {
+      file.id == calculationFileId ? (selectedCalculationFile = file) : null;
+    }
+
+    const stream = Readable.from(selectedCalculationFile.file);
+    response.set({
+      'Content-Disposition': `inline; filename="${selectedCalculationFile.fileName}"`,
+      'Content-Type': 'octet-stream',
+    });
+    return new StreamableFile(stream);
   }
 }

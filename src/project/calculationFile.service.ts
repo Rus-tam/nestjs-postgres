@@ -49,4 +49,17 @@ export class CalculationFileService {
       throw new NotFoundException(CalculationFileErrors.NotFoundById);
     }
   }
+
+  async getAllCalculationFiles(): Promise<CalculationFile[]> {
+    const calculationFiles = await this.calculationFileRepository.find({
+      relations: ['project'],
+    });
+
+    if (calculationFiles.length === 0) {
+      Logger.error(`There is no one calculation file`);
+      throw new NotFoundException(CalculationFileErrors.NotFound);
+    }
+
+    return calculationFiles;
+  }
 }
